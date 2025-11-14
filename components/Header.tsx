@@ -88,40 +88,29 @@ export default function Header() {
       {/* Navegação e usuário - Direita */}
       <div className="flex items-center gap-4">
         {/* Seletor de páginas - sempre habilitado para visualização */}
-        <select
-          value={selectedPage}
-          onChange={handlePageChange}
-          className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white outline-none transition hover:bg-white/15 focus:border-white/30 focus:ring-2 focus:ring-white/20"
-          title={userSector ? `Você pode editar apenas o setor: ${userSector.toUpperCase()}` : ''}
-        >
-          <option value="ti" className="bg-slate-800 text-white">
-            TI
-          </option>
-          <option value="financeiro" className="bg-slate-800 text-white">
-            Financeiro
-          </option>
-          <option value="rh" className="bg-slate-800 text-white">
-            RH
-          </option>
-          <option value="comercial" className="bg-slate-800 text-white">
-            Comercial
-          </option>
-          <option value="marketing" className="bg-slate-800 text-white">
-            Marketing
-          </option>
-          <option value="operacoes" className="bg-slate-800 text-white">
-            Operações
-          </option>
-          <option value="administrativo" className="bg-slate-800 text-white">
-            Administrativo
-          </option>
-          <option value="academico" className="bg-slate-800 text-white">
-            Acadêmico
-          </option>
-          <option value="cultural" className="bg-slate-800 text-white">
-            Cultural
-          </option>
-        </select>
+        <div className="relative">
+          <select
+            value={selectedPage}
+            onChange={handlePageChange}
+            className="appearance-none rounded-xl border border-white/20 bg-white/10 px-4 py-2 pr-10 text-sm font-medium text-white outline-none transition hover:bg-white/15 focus:border-white/40 focus:bg-white/20 focus:ring-2 focus:ring-white/30 cursor-pointer min-w-[140px] [&>option]:bg-slate-800 [&>option]:text-white [&>option]:py-2 [&>option]:px-3"
+            title={userSector ? `Você pode editar apenas o setor: ${userSector.toUpperCase()}` : ''}
+          >
+            <option value="ti">TI</option>
+            <option value="financeiro">Financeiro</option>
+            <option value="rh">RH</option>
+            <option value="comercial">Comercial</option>
+            <option value="marketing">Marketing</option>
+            <option value="operacoes">Operações</option>
+            <option value="administrativo">Administrativo</option>
+            <option value="academico">Acadêmico</option>
+            <option value="cultural">Cultural</option>
+          </select>
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/80">
+            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+        </div>
 
         {/* Nome do usuário e logout */}
         <div className="flex items-center gap-4">

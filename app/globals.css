@@ -46,3 +46,22 @@ body {
   background: var(--accent);
   color: #ffffff;
 }
+
+/* Estilos customizados para o dropdown de setores */
+select option {
+  background-color: #1e293b;
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+select option:hover {
+  background-color: #334155;
+}
+
+select option:checked {
+  background-color: #3b82f6;
+  color: #ffffff;
+  font-weight: 600;
+}
