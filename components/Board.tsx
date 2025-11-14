@@ -15,7 +15,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import ColumnView, { Column, Card } from './Column';
 import { supabase } from '@/lib/supabaseClient';
 
-async function fetchBoard(): Promise<Column[]> {
+async function fetchBoard(pageTag: string): Promise<Column[]> {
   const { data: cols, error: ce } = await supabase
     .from('columns')
     .select('*')
@@ -26,6 +26,7 @@ async function fetchBoard(): Promise<Column[]> {
   const { data: cards, error: ca } = await supabase
     .from('cards')
     .select('*')
+    .eq('page_tag', pageTag)
     .order('order', { ascending: true });
   if (ca) throw ca;
 
@@ -51,7 +52,11 @@ function findColumnIdByCardId(columns: Column[], cardId: string) {
   return columns.find((column) => column.cards.some((card) => card.id === cardId))?.id;
 }
 
-export default function Board() {
+type BoardProps = {
+  pageTag: string;
+};
+
+export default function Board({ pageTag }: BoardProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -65,14 +70,14 @@ export default function Board() {
   const loadBoard = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await fetchBoard();
+      const data = await fetchBoard(pageTag);
       setColumns(data);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [pageTag]);
 
   useEffect(() => {
     loadBoard();
@@ -83,7 +88,7 @@ export default function Board() {
       const nextOrder = columns.find((col) => col.id === columnId)?.cards.length ?? 0;
       const { data, error } = await supabase
         .from('cards')
-        .insert({ content, column_id: columnId, order: nextOrder })
+        .insert({ content, column_id: columnId, order: nextOrder, page_tag: pageTag })
         .select()
         .single();
       if (error) throw error;
@@ -96,7 +101,7 @@ export default function Board() {
         )
       );
     },
-    [columns]
+    [columns, pageTag]
   );
 
   const handleEditCard = useCallback(async (cardId: string, columnId: string, content: string) => {

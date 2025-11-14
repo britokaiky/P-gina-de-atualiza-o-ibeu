@@ -10,7 +10,19 @@ create table if not exists cards (
   id uuid primary key default gen_random_uuid(),
   content text not null,
   column_id uuid references columns(id) on delete cascade,
-  "order" integer not null
+  "order" integer not null,
+  page_tag text
+);
+
+-- Tabela de usuários
+create table if not exists usuario_feedz (
+  id int8 primary key generated always as identity,
+  nome varchar,
+  login varchar,
+  senha varchar,
+  email varchar not null,
+  tipo varchar,
+  created_at timestamptz not null default now()
 );
 
 -- Dados iniciais
