@@ -11,13 +11,17 @@ export type Column = { id: string; title: string; order: number; cards: Card[] }
 
 type Props = {
   column: Column;
+  canEdit: boolean;
   onAddCard: (content: string) => Promise<void>;
   onEditCard: (cardId: string, content: string) => Promise<void>;
   onDeleteCard: (cardId: string) => Promise<void>;
 };
 
-export default function ColumnView({ column, onAddCard, onEditCard, onDeleteCard }: Props) {
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+export default function ColumnView({ column, canEdit, onAddCard, onEditCard, onDeleteCard }: Props) {
+  const { setNodeRef, isOver } = useDroppable({ 
+    id: column.id,
+    disabled: !canEdit
+  });
   const sortableItems = useMemo(() => column.cards.map((card) => card.id), [column.cards]);
 
   return (
@@ -29,7 +33,7 @@ export default function ColumnView({ column, onAddCard, onEditCard, onDeleteCard
             {column.cards.length} {column.cards.length === 1 ? 'item' : 'itens'}
           </span>
         </div>
-        <AddCardForm onAdd={onAddCard} />
+        {canEdit && <AddCardForm onAdd={onAddCard} />}
       </div>
       <div
         ref={setNodeRef}
@@ -37,16 +41,29 @@ export default function ColumnView({ column, onAddCard, onEditCard, onDeleteCard
           isOver ? 'bg-[var(--accent-soft)]/40' : ''
         }`}
       >
-        <SortableContext items={sortableItems} strategy={verticalListSortingStrategy}>
-          {column.cards.map((card) => (
+        {canEdit ? (
+          <SortableContext items={sortableItems} strategy={verticalListSortingStrategy}>
+            {column.cards.map((card) => (
+              <CardItem
+                key={card.id}
+                card={card}
+                canEdit={canEdit}
+                onEdit={onEditCard}
+                onDelete={onDeleteCard}
+              />
+            ))}
+          </SortableContext>
+        ) : (
+          column.cards.map((card) => (
             <CardItem
               key={card.id}
               card={card}
+              canEdit={canEdit}
               onEdit={onEditCard}
               onDelete={onDeleteCard}
             />
-          ))}
-        </SortableContext>
+          ))
+        )}
         <div className="h-2" />
       </div>
     </div>

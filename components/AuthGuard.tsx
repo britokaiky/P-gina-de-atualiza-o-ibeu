@@ -18,18 +18,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         
         if (data.authenticated) {
           setIsAuthenticated(true);
-          // Se estiver autenticado e na página de login, redireciona
-          if (pathname === '/login') {
+          // Se estiver autenticado e na página de login ou cadastro, redireciona
+          if (pathname === '/login' || pathname === '/cadastro') {
             router.push('/');
           }
         } else {
-          // Se não estiver autenticado e não estiver na página de login, redireciona
-          if (pathname !== '/login') {
+          // Se não estiver autenticado e não estiver em páginas públicas, redireciona
+          if (pathname !== '/login' && pathname !== '/cadastro') {
             router.push('/login');
           }
         }
       } catch (error) {
-        if (pathname !== '/login') {
+        if (pathname !== '/login' && pathname !== '/cadastro') {
           router.push('/login');
         }
       } finally {
@@ -51,8 +51,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Página de login não precisa do layout padrão
-  if (pathname === '/login') {
+  // Páginas públicas não precisam do layout padrão
+  if (pathname === '/login' || pathname === '/cadastro') {
     return <>{children}</>;
   }
 

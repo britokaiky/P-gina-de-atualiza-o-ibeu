@@ -10,20 +10,23 @@ import type { Card } from './Column';
 
 type Props = {
   card: Card;
+  canEdit?: boolean;
   onEdit: (cardId: string, content: string) => Promise<void>;
   onDelete: (cardId: string) => Promise<void>;
 };
 
-export default function CardItem({ card, onEdit, onDelete }: Props) {
+export default function CardItem({ card, canEdit = true, onEdit, onDelete }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [value, setValue] = useState(card.content);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: card.id
+    id: card.id,
+    disabled: !canEdit
   });
 
   const style = useMemo<CSSProperties>(() => {
@@ -73,11 +76,10 @@ export default function CardItem({ card, onEdit, onDelete }: Props) {
   }
 
   async function handleDelete() {
-    const confirmation = window.confirm('Deseja excluir esta demanda? Essa ação não pode ser desfeita.');
-    if (!confirmation) return;
     try {
       setIsSubmitting(true);
       await onDelete(card.id);
+      setShowDeleteConfirm(false);
     } catch (error) {
       console.error(error);
     } finally {
@@ -90,11 +92,14 @@ export default function CardItem({ card, onEdit, onDelete }: Props) {
       <div
         ref={setNodeRef}
         style={style}
-        className="group relative cursor-grab rounded-2xl border border-[var(--surface-border)] bg-[var(--card)] p-4 text-sm shadow-[var(--card-shadow)] transition hover:-translate-y-0.5 hover:shadow-lg active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
+        className={`group relative rounded-2xl border border-[var(--surface-border)] bg-[var(--card)] p-4 text-sm shadow-[var(--card-shadow)] transition ${
+          canEdit 
+            ? 'cursor-grab hover:-translate-y-0.5 hover:shadow-lg active:cursor-grabbing' 
+            : 'cursor-default opacity-90'
+        }`}
+        {...(canEdit ? { ...attributes, ...listeners } : {})}
       >
-      {!isEditing && (
+      {!isEditing && canEdit && (
         <button
           type="button"
           aria-label="Opções"
@@ -130,10 +135,10 @@ export default function CardItem({ card, onEdit, onDelete }: Props) {
           </button>
           <button
             type="button"
-            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
             onClick={() => {
               setMenuOpen(false);
-              handleDelete();
+              setShowDeleteConfirm(true);
             }}
             disabled={isSubmitting}
           >
@@ -198,6 +203,45 @@ export default function CardItem({ card, onEdit, onDelete }: Props) {
                 <span className="sr-only">Fechar modal de edição</span>
                 ×
               </button>
+            </div>
+          </div>,
+          document.body
+        )}
+      {mounted &&
+        showDeleteConfirm &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/50 backdrop-blur-sm px-4"
+            onClick={() => !isSubmitting && setShowDeleteConfirm(false)}
+          >
+            <div
+              className="relative flex w-full max-w-md flex-col gap-5 rounded-3xl border border-white/40 bg-white/95 p-6 shadow-[0px_28px_60px_-35px_rgba(15,23,42,0.65)]"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-[var(--text)]">Confirmar exclusão</h2>
+                <p className="text-sm text-[var(--muted)]">
+                  Deseja excluir esta demanda? Essa ação não pode ser desfeita.
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-red-600 text-white hover:bg-red-700"
+                  onClick={() => void handleDelete()}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Excluindo...' : 'Excluir'}
+                </Button>
+              </div>
             </div>
           </div>,
           document.body

@@ -1,15 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [login, setLogin] = useState('');
   const [senha, setSenha] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const cadastro = searchParams.get('cadastro');
+    const emailConfirmation = searchParams.get('email_confirmation');
+    
+    if (cadastro === 'success') {
+      if (emailConfirmation === 'true') {
+        setSuccess('Conta criada com sucesso! Verifique seu email para confirmar sua conta antes de fazer login.');
+      } else {
+        setSuccess('Conta criada com sucesso! Faça login para continuar.');
+      }
+    }
+    
+    const emailConfirmed = searchParams.get('email_confirmed');
+    if (emailConfirmed === 'true') {
+      setSuccess('Email confirmado com sucesso! Faça login para continuar.');
+    }
+  }, [searchParams]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -59,6 +80,11 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {success && (
+            <div className="rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+              {success}
+            </div>
+          )}
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}
@@ -103,6 +129,15 @@ export default function LoginPage() {
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-[var(--muted)]">
+            Não tem uma conta?{' '}
+            <Link href="/cadastro" className="font-medium text-[var(--accent)] hover:underline">
+              Criar conta
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

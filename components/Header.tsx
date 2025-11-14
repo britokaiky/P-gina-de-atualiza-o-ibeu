@@ -8,6 +8,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const [userName, setUserName] = useState('');
+  const [userSector, setUserSector] = useState<string | null>(null);
   const [selectedPage, setSelectedPage] = useState('');
 
   useEffect(() => {
@@ -18,6 +19,21 @@ export default function Header() {
     if (name) {
       setUserName(decodeURIComponent(name));
     }
+    
+    // Buscar setor do usuário
+    async function fetchUserSector() {
+      try {
+        const response = await fetch('/api/auth/user');
+        const data = await response.json();
+        if (data.success && data.user?.tipo) {
+          setUserSector(data.user.tipo);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar setor do usuário:', error);
+      }
+    }
+    
+    fetchUserSector();
     
     // Definir página atual baseada no pathname
     if (pathname === '/') {
@@ -65,11 +81,12 @@ export default function Header() {
 
       {/* Navegação e usuário - Direita */}
       <div className="flex items-center gap-4">
-        {/* Seletor de páginas */}
+        {/* Seletor de páginas - sempre habilitado para visualização */}
         <select
           value={selectedPage}
           onChange={handlePageChange}
           className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-white outline-none transition hover:bg-white/15 focus:border-white/30 focus:ring-2 focus:ring-white/20"
+          title={userSector ? `Você pode editar apenas o setor: ${userSector.toUpperCase()}` : ''}
         >
           <option value="ti" className="bg-slate-800 text-white">
             TI

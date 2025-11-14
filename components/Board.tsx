@@ -60,6 +60,8 @@ export default function Board({ pageTag }: BoardProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [canEdit, setCanEdit] = useState(false);
+  const [userSector, setUserSector] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -82,6 +84,27 @@ export default function Board({ pageTag }: BoardProps) {
   useEffect(() => {
     loadBoard();
   }, [loadBoard]);
+
+  // Verificar se o usuário pode editar esta página
+  useEffect(() => {
+    async function checkEditPermission() {
+      try {
+        const response = await fetch('/api/auth/user');
+        const data = await response.json();
+        if (data.success && data.user?.tipo) {
+          const sector = data.user.tipo;
+          setUserSector(sector);
+          // O usuário pode editar apenas se o setor dele corresponder ao pageTag
+          setCanEdit(sector === pageTag);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar permissão:', error);
+        setCanEdit(false);
+      }
+    }
+    
+    checkEditPermission();
+  }, [pageTag]);
 
   const handleAddCard = useCallback(
     async (columnId: string, content: string) => {
@@ -302,10 +325,10 @@ export default function Board({ pageTag }: BoardProps) {
   return (
     <div className="flex w-full flex-1">
       <DndContext
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
+        sensors={canEdit ? sensors : []}
+        onDragStart={canEdit ? handleDragStart : undefined}
+        onDragOver={canEdit ? handleDragOver : undefined}
+        onDragEnd={canEdit ? handleDragEnd : undefined}
       >
         <div className="flex w-full flex-1 items-stretch gap-8 overflow-x-auto pb-6">
           {loading
@@ -314,6 +337,7 @@ export default function Board({ pageTag }: BoardProps) {
                 <ColumnView
                   key={column.id}
                   column={column}
+                  canEdit={canEdit}
                   onAddCard={(content) => handleAddCard(column.id, content)}
                   onEditCard={(cardId, content) => handleEditCard(cardId, column.id, content)}
                   onDeleteCard={(cardId) => handleDeleteCard(cardId, column.id)}
