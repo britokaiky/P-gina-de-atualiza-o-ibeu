@@ -17,7 +17,13 @@ export default function Header() {
       .find(row => row.startsWith('user_name='))
       ?.split('=')[1];
     if (name) {
-      setUserName(decodeURIComponent(name));
+      const fullName = decodeURIComponent(name);
+      // Extrair apenas nome e sobrenome (primeiras duas palavras)
+      const nameParts = fullName.trim().split(/\s+/);
+      const shortName = nameParts.length > 1 
+        ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}` 
+        : nameParts[0];
+      setUserName(shortName);
     }
     
     // Buscar setor do usuário
